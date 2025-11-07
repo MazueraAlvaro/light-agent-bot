@@ -1,98 +1,186 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+````{"id":"23984","variant":"standard","title":"README - Light Agent Bot"}
+# Light Agent Bot
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Asistente de IA ligero orientado a **agendamiento de citas médicas** (solicitar, consultar y cancelar), con verificación de identidad y uso estricto de herramientas.  
+Este proyecto demuestra cómo **orquestar un LLM (vLLM)** con reglas de negocio definidas, *system prompt* bien estructurado y control de flujo para evitar comportamientos no deseados.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> Repo: [https://github.com/MazueraAlvaro/light-agent-bot](https://github.com/MazueraAlvaro/light-agent-bot)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Características
 
-## Project setup
+- **Agente médico** con tres funciones principales: **asignar**, **consultar** y **cancelar** citas.  
+- **Verificación de identidad** antes de cada acción.  
+- **Uso de herramientas controladas** (`listAvailability`, `createAppointment`, `getAppointment`, `cancelAppointment`).  
+- Cumplimiento del principio de **mínimo necesario (PHI)** y **no divulgación de datos internos**.  
+- Integración con **vLLM** compatible con la API de OpenAI (`/v1/chat/completions`).  
 
-```bash
-$ npm install
+---
+
+## 🧱 Arquitectura General
+
+```
+[Cliente / Frontend]  →  [Light Agent Bot API]  →  [vLLM: Qwen3-4B-Instruct]
+                                 │
+                                 ├── verifyPatient / listAvailability / createAppointment / cancelAppointment
+                                 └── Servicios / DB de negocio
 ```
 
-## Compile and run the project
+- El **modelo LLM** se usa para el razonamiento y comprensión.  
+- La **lógica de negocio** (verificación, validación, políticas) se mantiene en el backend.  
+
+---
+
+## 📦 Requisitos
+
+- GPU NVIDIA con soporte CUDA.  
+- Docker + nvidia-container-toolkit configurado.  
+- Token de Hugging Face válido (`HUGGING_FACE_HUB_TOKEN`).  
+- Node.js 18+ o entorno compatible.  
+
+---
+
+## ⚙️ Variables de entorno (.env)
+
+Ejemplo de configuración mínima:
 
 ```bash
-# development
-$ npm run start
+PORT=3000
+NODE_ENV=development
 
-# watch mode
-$ npm run start:dev
+# vLLM endpoint
+VLLM_BASE_URL=http://localhost:8000/v1
+VLLM_MODEL=Qwen/Qwen3-4B-Instruct-2507
 
-# production mode
-$ npm run start:prod
+# APIs de negocio
+APPOINTMENTS_API_URL=http://localhost:4000
+APPOINTMENTS_API_KEY=change-me
 ```
 
-## Run tests
+---
+
+## 🏃‍♂️ Ejecución rápida
+
+### 1. Clonar e instalar
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/MazueraAlvaro/light-agent-bot.git
+cd light-agent-bot
+npm install
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 2. Ejecutar **vLLM con Docker**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+> Asegúrate de tener instalado `nvidia-container-toolkit`.  
+> Sustituye `hf_<TOKEN>` por tu token de Hugging Face.
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker run --cpus="2" --runtime nvidia --gpus all \
+  --name vllm_container_qwen_opt \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  --env "HUGGING_FACE_HUB_TOKEN=hf_<TOKEN>" \
+  -p 8000:8000 \
+  --shm-size=2g \
+  --ipc=host \
+  vllm/vllm-openai:latest \
+  --model Qwen/Qwen3-4B-Instruct-2507 \
+  --enable-auto-tool-choice \
+  --tool-call-parser hermes \
+  --max_model_len 43472 \
+  --max-num-seqs 384
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+🔹 **Sugerencias:**
+- Ajusta `--max-num-seqs` si tu GPU tiene menos VRAM.  
+- Usa `--max_model_len` según el tamaño máximo de contexto esperado.  
+- Verifica el uso de cache en los logs (`GPU KV cache usage`).  
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+### 3. Probar el endpoint del modelo
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen3-4B-Instruct-2507",
+    "messages": [{"role": "user", "content": "What is the capital of France?"}]
+  }'
+```
 
-## Support
+Deberías recibir una respuesta que contenga `"Paris"`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+### 4. Iniciar la aplicación del agente
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run start:dev
+# o para producción
+npm run build && npm run start:prod
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🧠 Comportamiento del agente
+
+- Verifica identidad antes de cualquier acción.  
+- Solo ofrece citas **existentes** mediante `listAvailability`.  
+- Utiliza **selecciones numeradas** en lugar de IDs visibles.  
+- No genera información médica ni respuestas fuera de su dominio.  
+- Mantiene **alta precisión y control de contexto** a través del prompt del sistema.  
+
+---
+
+## 🔬 Pruebas de carga (k6)
+
+Ejemplo de prueba:
+
+```js
+import http from 'k6/http';
+import { check } from 'k6';
+
+export const options = { vus: 50, duration: '30s' };
+
+export default function () {
+  const res = http.post('http://localhost:8000/v1/chat/completions', JSON.stringify({
+    model: 'Qwen/Qwen3-4B-Instruct-2507',
+    messages: [{ role: 'user', content: 'What is the capital of France?' }],
+  }), { headers: { 'Content-Type': 'application/json' } });
+
+  check(res, {
+    'status 200': r => r.status === 200,
+    'mentions Paris': r => (r.json()?.choices?.[0]?.message?.content || '').toLowerCase().includes('paris')
+  });
+}
+```
+
+---
+
+## 🧩 Problemas comunes
+
+| Problema | Solución |
+|-----------|-----------|
+| **OOM al arrancar vLLM** | Reduce `--max-num-seqs` o `--max_model_len`. |
+| **Latencia alta (p95)** | Ajusta `max_tokens` en requests o reduce `--max-num-seqs`. |
+| **Respuestas inventadas** | Revisa el *system prompt* y las reglas de uso de herramientas. |
+
+---
+
+## 📜 Licencia
+
+MIT
+
+---
+
+## 🤝 Contribuciones
+
+1. Crea un *issue* con la descripción del cambio.  
+2. Haz un fork y una rama con tu mejora.  
+3. Abre un *Pull Request* con detalle de pruebas y comportamiento esperado.  
+
+---
+````
