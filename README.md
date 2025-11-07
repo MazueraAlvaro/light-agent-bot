@@ -1,4 +1,3 @@
-````{"id":"23984","variant":"standard","title":"README - Light Agent Bot"}
 # Light Agent Bot
 
 Asistente de IA ligero orientado a **agendamiento de citas médicas** (solicitar, consultar y cancelar), con verificación de identidad y uso estricto de herramientas.  
@@ -183,4 +182,3 @@ MIT
 3. Abre un *Pull Request* con detalle de pruebas y comportamiento esperado.  
 
 ---
-````
